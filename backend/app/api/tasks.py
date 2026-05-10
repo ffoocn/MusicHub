@@ -30,7 +30,8 @@ from sqlalchemy import and_, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import DownloadTask, Song
-from app.db.session import get_session
+from app.db.session import get_session, session_factory
+from app.services import access_auth_service
 from app.services.local_file_service import delete_local_song_file
 from app.services.task_manager import TaskManager, _serialize_task
 
@@ -262,7 +263,11 @@ async def clear_tasks(
 # WebSocket 实时推送
 # ==================================================================
 @router.websocket("/ws")
-async def ws_tasks(ws: WebSocket):
+async def ws_tasks(ws: WebSocket, token: str | None = Query(default=None)):
+    async with session_factory() as session:
+        if not await access_auth_service.is_token_valid(session, token):
+            await ws.close(code=1008)
+            return
     await ws.accept()
     mgr = TaskManager.get()
     try:

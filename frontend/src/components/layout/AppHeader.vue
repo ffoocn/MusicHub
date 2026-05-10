@@ -68,7 +68,7 @@
       >
         <ThemeToggler />
         <NotificationDropdown />
-        <HeaderAccountChip />
+        <HeaderAccountChip @logout="$emit('logout')" />
       </div>
     </div>
   </header>
@@ -87,6 +87,10 @@ import SearchBar from '@/components/layout/header/SearchBar.vue'
 const route = useRoute()
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()
 const isApplicationMenuOpen = ref(false)
+
+defineEmits<{
+  logout: []
+}>()
 
 const currentTitle = computed(() => (route.meta?.title as string) || '发现')
 

@@ -6,16 +6,48 @@ const api = axios.create({
 })
 
 const LONG_OPERATION_TIMEOUT = 120000
+const ACCESS_TOKEN_STORAGE_KEY = 'musichub.access_token'
+
+export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || ''
+
+export const setAccessToken = (token: string) => {
+  localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token)
+}
+
+export const clearAccessToken = () => {
+  localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY)
+}
+
+api.interceptors.request.use((config) => {
+  const token = getAccessToken()
+  if (token) {
+    config.headers.set('X-MusicHub-Token', token)
+  }
+  return config
+})
 
 api.interceptors.response.use(
   (resp) => resp,
   (err) => {
     console.error('[api error]', err?.response?.data ?? err.message)
+    if (err?.response?.status === 401) {
+      clearAccessToken()
+      window.dispatchEvent(new CustomEvent('musichub-auth-required'))
+    }
     return Promise.reject(err)
   },
 )
 
 export default api
+
+export const accessApi = {
+  status: () => api.get<{ authenticated: boolean }>('/access/status').then((r) => r.data),
+  login: (password: string) =>
+    api.post<{ token: string }>('/access/login', { password }).then((r) => r.data),
+  changePassword: (current_password: string, new_password: string) =>
+    api.post<{ status: string }>('/access/password', { current_password, new_password }).then((r) => r.data),
+  logout: () => api.post<{ status: string }>('/access/logout').then((r) => r.data),
+}
 
 export interface AccountStatus {
   platform: 'netease' | 'qq'

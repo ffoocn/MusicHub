@@ -22,6 +22,7 @@
 
 ### 2.1 登录与账号管理
 
+- 应用级访问密码：打开 Web UI 先输入访问密码，默认 `musichub`，可在「设置 → 安全」修改
 - 两平台扫码登录：网易云（weapi 加密二维码）、QQ 音乐（QQ 扫码 + 微信扫码）
 - Cookie 持久化到 SQLite，过期时前端弹窗提醒重新扫码
 - 单用户场景，每个平台支持单账号
@@ -426,6 +427,10 @@ POST   /api/m3u/regenerate                 重新生成所有 m3u
 ### 8.6 设置 & 统计
 
 ```
+GET    /api/access/status                  访问会话状态
+POST   /api/access/login                   输入访问密码，返回会话 token
+POST   /api/access/password                修改访问密码
+POST   /api/access/logout                  退出访问会话
 GET    /api/settings
 PUT    /api/settings
 GET    /api/stats/overview                 总览
@@ -807,6 +812,7 @@ TailAdmin UI 迁移进度：
   - 用户点击左侧 nav 时若仍带着 `?q=` 会被 `router.replace` 清掉，回到普通模式。
 
 完整功能清单：
+- 应用级访问密码：首次默认 `musichub`，登录后可在「设置 → 安全」修改；后端 API 同步校验会话 token
 - 多平台（网易云 + QQ 音乐）扫码登录 + Cookie 导入；登录后顶部 Header 实时展示账号头像、昵称、VIP
 - 关键词搜索 / URL 导入 / 单曲 / 歌单 / 专辑 — 可批量勾选 / 整体下载
 - 异步任务系统（3 路 worker + WebSocket 实时进度推送）

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { tasksApi, type DownloadTaskItem } from '@/api'
+import { getAccessToken, tasksApi, type DownloadTaskItem } from '@/api'
 
 /**
  * 任务全局 store。
@@ -18,6 +18,7 @@ export const useTasksStore = defineStore('tasks', () => {
   let socket: WebSocket | null = null
   let reconnectDelay = 1000
   let reconnectTimer: number | null = null
+  let shouldReconnect = false
 
   const allTasks = computed<DownloadTaskItem[]>(() =>
     Array.from(tasks.value.values()).sort((a, b) => b.id - a.id),
@@ -126,13 +127,15 @@ export const useTasksStore = defineStore('tasks', () => {
   }
 
   const connect = () => {
+    shouldReconnect = true
     if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
       return
     }
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const host = window.location.host
     // dev 模式 vite 代理 /ws → backend /api/tasks/ws，但实际后端路径是 /api/tasks/ws
-    const url = `${proto}://${host}/api/tasks/ws`
+    const token = encodeURIComponent(getAccessToken())
+    const url = `${proto}://${host}/api/tasks/ws?token=${token}`
     socket = new WebSocket(url)
 
     socket.onopen = () => {
@@ -153,8 +156,10 @@ export const useTasksStore = defineStore('tasks', () => {
       connected.value = false
       socket = null
       if (reconnectTimer) clearTimeout(reconnectTimer)
-      reconnectTimer = window.setTimeout(connect, reconnectDelay)
-      reconnectDelay = Math.min(reconnectDelay * 2, 30000)
+      if (shouldReconnect) {
+        reconnectTimer = window.setTimeout(connect, reconnectDelay)
+        reconnectDelay = Math.min(reconnectDelay * 2, 30000)
+      }
     }
     socket.onerror = (e) => {
       console.warn('ws error', e)
@@ -164,6 +169,17 @@ export const useTasksStore = defineStore('tasks', () => {
   const init = async () => {
     await refresh()
     connect()
+  }
+
+  const disconnect = () => {
+    shouldReconnect = false
+    if (reconnectTimer) clearTimeout(reconnectTimer)
+    reconnectTimer = null
+    if (socket) {
+      socket.close()
+      socket = null
+    }
+    connected.value = false
   }
 
   return {
@@ -176,6 +192,7 @@ export const useTasksStore = defineStore('tasks', () => {
     concurrency,
     queueSize,
     init,
+    disconnect,
     refresh,
     upsert,
     removeTask,

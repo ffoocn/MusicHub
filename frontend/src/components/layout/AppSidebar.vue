@@ -1,8 +1,9 @@
 <template>
   <aside
     :class="[
-      'fixed left-0 top-0 z-99999 mt-0 flex h-screen flex-col overflow-hidden border-r border-gray-200 bg-white px-5 text-gray-900 transition-[width,transform] duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900',
+      'fixed left-0 top-0 z-99999 mt-0 flex h-screen flex-col overflow-hidden border-r border-gray-200 bg-white text-gray-900 transition-[width,transform] duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900',
       isExpanded || isMobileOpen || isHovered ? 'w-[290px]' : 'w-[90px]',
+      showContent ? 'px-5' : 'px-4',
       isMobileOpen ? 'translate-x-0' : '-translate-x-full',
       'xl:translate-x-0',
     ]"
@@ -11,20 +12,21 @@
   >
     <div
       :class="[
-        'flex shrink-0 items-center gap-2 pb-7 pt-8',
+        'flex w-full shrink-0 items-center pb-7 pt-8',
         !showContent ? 'xl:justify-center' : 'justify-start',
       ]"
     >
-      <router-link to="/discover" class="flex min-w-0 items-center gap-2.5">
-        <!--
-          Sidebar 顶部 logo：进一步贴齐 TailAdmin Dashboard 原版（icon ~32px + 较大粗体文字）。
-            - 容器 size-8 (32px) + rounded-lg，内部 icon size-5 (20px)；
-            - 右侧文字 text-xl font-bold，显著比 base 字号醒目，对齐原版"TailAdmin"字样的视觉权重。
-        -->
+      <router-link
+        to="/discover"
+        :class="[
+          'flex h-11 w-full min-w-0 items-center rounded-lg transition-[justify-content,gap] duration-200',
+          showContent ? 'justify-start gap-2.5' : 'justify-center gap-0',
+        ]"
+      >
         <span
-          class="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-theme-xs"
+          class="flex size-9 shrink-0 items-center justify-center rounded-xl"
         >
-          <HeadphoneAltIcon class="size-5" />
+          <img src="/images/logo/logo-icon.svg" alt="MusicHub" class="size-9" />
         </span>
         <span :class="logoLabelClass">
           MusicHub
@@ -128,7 +130,6 @@ import { useRoute } from 'vue-router'
 import {
   FolderIcon,
   GridIcon,
-  HeadphoneAltIcon,
   MoreDots,
   RefreshIcon,
   SettingsIcon,

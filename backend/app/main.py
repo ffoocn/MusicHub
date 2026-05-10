@@ -11,12 +11,13 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
+from app.api import access as access_router
 from app.api import auth as auth_router
 from app.api import discover as discover_router
 from app.api import download as download_router
@@ -30,6 +31,7 @@ from app.api import tasks as tasks_router
 from app.config import settings
 from app.db.session import init_db, session_factory
 from app.services import scheduler as scheduler_service
+from app.services import access_auth_service
 from app.services import settings_service
 from app.services.task_manager import TaskManager
 from app.utils.logger import logger
@@ -42,6 +44,7 @@ async def lifespan(_app: FastAPI):
     await init_db()
     async with session_factory() as session:
         await settings_service.ensure_defaults(session)
+        await access_auth_service.ensure_access_defaults(session)
     await TaskManager.get().start()
     await scheduler_service.start()
     logger.info(f"MusicHub v{__version__} started on port {settings.port}")
@@ -76,7 +79,27 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def require_access_for_api(request: Request, call_next):
+    """除登录/探活外，所有 API 请求都需要访问 token。"""
+    path = request.url.path
+    if (
+        request.method == "OPTIONS"
+        or not path.startswith("/api/")
+        or path in {"/api/health", "/api/access/status", "/api/access/login"}
+    ):
+        return await call_next(request)
+
+    token = request.headers.get("X-MusicHub-Token")
+    async with session_factory() as session:
+        ok = await access_auth_service.is_token_valid(session, token)
+    if not ok:
+        return JSONResponse({"detail": "未登录或会话已失效"}, status_code=401)
+    return await call_next(request)
+
+
 # ---------- API 路由 ----------
+app.include_router(access_router.router)
 app.include_router(health_router.router)
 app.include_router(auth_router.router)
 app.include_router(discover_router.router)

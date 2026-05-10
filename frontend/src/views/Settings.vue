@@ -22,7 +22,8 @@
       <section class="min-w-0">
         <AccountManager v-if="activeTab === 'account'" />
         <DownloadSettings v-else-if="activeTab === 'download'" />
-        <OrganizeSettings v-else />
+        <OrganizeSettings v-else-if="activeTab === 'organize'" />
+        <AccessPasswordSettings v-else />
       </section>
     </div>
   </div>
@@ -30,12 +31,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Download, FolderTree, UserRound } from 'lucide-vue-next'
+import { Download, FolderTree, LockKeyhole, UserRound } from 'lucide-vue-next'
 import AccountManager from '@/components/AccountManager.vue'
+import AccessPasswordSettings from '@/components/AccessPasswordSettings.vue'
 import DownloadSettings from '@/components/DownloadSettings.vue'
 import OrganizeSettings from '@/components/OrganizeSettings.vue'
 
-type SettingsTab = 'account' | 'download' | 'organize'
+type SettingsTab = 'account' | 'download' | 'organize' | 'security'
 
 const activeTab = ref<SettingsTab>('account')
 
@@ -43,5 +45,6 @@ const tabs = [
   { key: 'account' as const, label: '账号管理', icon: UserRound },
   { key: 'download' as const, label: '下载偏好', icon: Download },
   { key: 'organize' as const, label: '目录与命名', icon: FolderTree },
+  { key: 'security' as const, label: '安全', icon: LockKeyhole },
 ]
 </script>

@@ -188,6 +188,14 @@
           <UserRound class="size-4 text-gray-500 dark:text-gray-400" />
           管理账号
         </router-link>
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-theme-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/[0.04]"
+          @click="logout"
+        >
+          <LogOut class="size-4 text-gray-500 dark:text-gray-400" />
+          退出访问
+        </button>
       </div>
     </div>
   </div>
@@ -195,7 +203,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { ChevronDown, UserRound } from 'lucide-vue-next'
+import { ChevronDown, LogOut, UserRound } from 'lucide-vue-next'
 import { SettingsIcon } from '@/icons'
 import MusicPlatformIcon from '@/components/music/MusicPlatformIcon.vue'
 import { useAccountsStore } from '@/stores/accounts'
@@ -204,6 +212,10 @@ import type { AccountStatus } from '@/api'
 
 const store = useAccountsStore()
 const tasksStore = useTasksStore()
+
+const emit = defineEmits<{
+  logout: []
+}>()
 
 const rootRef = ref<HTMLElement | null>(null)
 const open = ref(false)
@@ -263,6 +275,11 @@ const toggle = () => {
 
 const close = () => {
   open.value = false
+}
+
+const logout = () => {
+  close()
+  emit('logout')
 }
 
 const onClickOutside = (e: MouseEvent) => {
