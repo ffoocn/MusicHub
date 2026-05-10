@@ -31,7 +31,7 @@ FROM python:3.11-slim AS runtime
 # 系统依赖：
 #   - ffmpeg：mutagen 处理某些封面格式时需要
 #   - tzdata：时区支持
-#   - wget：healthcheck 用
+#   - wget：可选小工具（手动探活等）
 #   - libxml2/libxslt：lxml 解析 HTML（URL 导入用）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

@@ -441,20 +441,17 @@ GET    /api/stats/trend                    趋势
 ```yaml
 services:
   musichub:
-    image: musichub:latest
+    image: eianz/musichub:latest
     container_name: musichub
+    restart: unless-stopped
     ports:
-      - "${HOST_PORT:-5173}:5173"
+      - "5173:5173"
     volumes:
       - ./music:/music
       - ./config:/config
-    environment:
-      - TZ=Asia/Shanghai
-      - MUSIC_DIR=/music
-      - CONFIG_DIR=/config
-      - PORT=5173
-    restart: unless-stopped
 ```
+
+端口、时区、`MUSIC_DIR`/`CONFIG_DIR`/`LOG_LEVEL` 等默认值已在镜像构建时写入；需要调试可在服务下增加 `environment`。仓库里的 **`docker-compose.yml`** 仅拉取 **`eianz/musichub:latest`**（无需源码）。开发者本地从 Dockerfile 构建：`docker build -t eianz/musichub:latest .`
 
 ### 9.2 Docker Hub 自动构建（GitHub Actions）
 
@@ -479,9 +476,12 @@ services:
 docker pull eianz/musichub:latest
 ```
 
-将本地 `docker-compose.yml` 里的 `image` 改为 `eianz/musichub:latest`（并视需要去掉 `build:` 段）即可改用 Hub 上的镜像而无需本机构建。
+部署时复制 **`docker-compose.yml`**（或与 §9.1 示例等价），执行 **`docker compose pull && docker compose up -d`** 即可；镜像名与 CI 推送的 **`eianz/musichub:latest`** 一致。
 
-**CI 构建失败排查**：根目录 `.gitignore` 里表示「音乐下载目录」的规则必须用 **`/music/`**（仅忽略仓库根目录），不能使用宽泛的 `music/`，否则会把 `frontend/src/components/music/` 整块排除出版本库，GitHub 上 `npm run build` / `vue-tsc` 会报找不到 `useMusicToast` 等模块。
+**CI 构建失败排查**：
+
+- **前端 `npm run build` / `vue-tsc`**：根目录 `.gitignore` 须用 **`/music/`**（仅忽略仓库根目录），不能用宽泛的 `music/`，否则会误忽略 `frontend/src/components/music/`。
+- **Docker 登录 `Password required`**：`DOCKERHUB_TOKEN` 未填或为空。**删除 GitHub 仓库再新建后，Actions Secrets 会清空**，须在 Settings → Secrets 中重新添加 Docker Hub **Access Token**（不要用账户登录密码），并与工作流中的名称一致：`DOCKERHUB_USERNAME`、`DOCKERHUB_TOKEN`。
 
 ### 9.3 启动后
 
@@ -890,14 +890,14 @@ npm run dev   # http://127.0.0.1:5174，代理后端 5173
 
 ## 十四、Docker 部署
 
-本地构建并启动：
+仅使用 Docker Hub 镜像（推荐，与根目录 **`docker-compose.yml`** 一致）：
 
 ```bash
-docker compose up -d --build
+docker compose pull && docker compose up -d
 # 访问 http://localhost:5173
 ```
 
-若已配置 **9.2** 中的 GitHub Actions，可直接拉取 `eianz/musichub:latest`（见该节）。
+克隆仓库后从源码本地构建镜像：`docker build -t eianz/musichub:latest .`，再 **`docker compose up -d`** 会使用本地该标签（与 compose 中镜像名一致）。
 
 
 数据卷：
