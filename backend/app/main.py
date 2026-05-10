@@ -99,6 +99,14 @@ if _static_dir.exists():
         StaticFiles(directory=_static_dir / "assets"),
         name="assets",
     )
+    # Vite 将 ``public/images`` 拷到 ``dist/images``；必须单独挂载，否则会被下方 SPA 兜底当成路由并返回 index.html，导致平台 PNG 裂图。
+    _images_dir = _static_dir / "images"
+    if _images_dir.is_dir():
+        app.mount(
+            "/images",
+            StaticFiles(directory=_images_dir),
+            name="images",
+        )
 
     @app.get("/")
     async def serve_index() -> FileResponse:
