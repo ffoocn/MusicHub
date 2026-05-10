@@ -1,0 +1,43 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+}
+
+.music-range {
+  height: 6px;
+  appearance: none;
+  border-radius: 9999px;
+  background: linear-gradient(to right, rgb(70 95 255), rgb(70 95 255)) left / var(--range-fill, 0%) 100% no-repeat,
+    rgb(228 231 236);
+  outline: none;
+}
+
+.dark .music-range {
+  background: linear-gradient(to right, rgb(117 146 255), rgb(117 146 255)) left / var(--range-fill, 0%) 100% no-repeat,
+    rgb(52 64 84);
+}
+
+.music-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid rgb(70 95 255);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}
+
+.music-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid rgb(70 95 255);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}

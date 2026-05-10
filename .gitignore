@@ -1,0 +1,51 @@
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+.python-version
+
+# ----- Node -----
+node_modules/
+.npm
+.pnpm-store/
+.yarn/
+yarn-error.log
+npm-debug.log*
+
+# ----- 前端构建产物 -----
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ----- IDE -----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ----- Docker / 运行时数据（仅仓库根目录，勿写成 config/、music/，否则会误忽略源码路径） -----
+/config/
+/music/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+.env
+
+# ----- 日志 -----
+logs/
+*.log

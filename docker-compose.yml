@@ -1,0 +1,33 @@
+# MusicHub Docker Compose 配置
+# 用法：
+#   docker compose up -d              启动
+#   docker compose logs -f musichub   看日志
+#   docker compose down               停止
+
+services:
+  musichub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: musichub:latest
+    container_name: musichub
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-5173}:5173"
+    volumes:
+      # 音乐输出目录（宿主机相对路径 ./music）
+      - ./music:/music
+      # 配置/数据库/Cookie 目录
+      - ./config:/config
+    environment:
+      - TZ=Asia/Shanghai
+      - PORT=5173
+      - MUSIC_DIR=/music
+      - CONFIG_DIR=/config
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5173/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
